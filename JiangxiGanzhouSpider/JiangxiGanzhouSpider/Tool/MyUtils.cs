@@ -188,24 +188,24 @@ namespace JiangxiGanzhouSpider.Tool
         /// <summary>
         /// 更新更新面板数据
         /// </summary>
-        /// <param name="label3"></param>
+        /// <param name="label"></param>
         /// <param name="count"></param>
-        public void UpdateLabel3(Label label3, int count)
+        public void UpdateLabel(Label label, int count)
         {
-            if (label3.InvokeRequired)
+            if (label.InvokeRequired)
             {
                 // 当一个控件的InvokeRequired属性值为真时，说明有一个创建它以外的线程想访问它
                 Action<int> actionDelegate = (x) =>
                 {
-                    label3.Text = x.ToString();
+                    label.Text = x.ToString();
                 };
                 // 或者
                 // Action<string> actionDelegate = delegate(string txt) { this.label2.Text = txt; };
-                label3.Invoke(actionDelegate, count);
+                label.Invoke(actionDelegate, count);
             }
             else
             {
-                label3.Text = count.ToString();
+                label.Text = count.ToString();
             }
         }
         ///

@@ -25,12 +25,12 @@ namespace JiangxiGanzhouSpider.SpiderProgram
         public string sqlitePath = AppDomain.CurrentDomain.BaseDirectory + "sqlite3.db";
         public SQLiteHelper sh = null;
         public string outPath = AppDomain.CurrentDomain.BaseDirectory + @"Word\Icook\";
-        public ListBox listBox = null;
+        public ListBox listBox1 = null;
         public Label label3 = null;
 
-        public Icook(ListBox listBox, Label label3)
+        public Icook(ListBox listBox1, Label label3)
         {
-            this.listBox = listBox;
+            this.listBox1 = listBox1;
             this.label3 = label3;
             hh = new HttpHelper();
             myUtils = new MyUtils();
@@ -91,7 +91,7 @@ namespace JiangxiGanzhouSpider.SpiderProgram
                                 sqlStr = $"insert into IcookCategory (Url,IsDownLoad)values('{categoryUrl}',0)";
                                 sh.ExeSqlOut(sqlStr);
                                 urlCount++;
-                                myUtils.UpdateLabel3(label3, urlCount);
+                                myUtils.UpdateLabel(label3, urlCount);
                             }
                         }
                         catch (Exception ex)
@@ -143,7 +143,7 @@ namespace JiangxiGanzhouSpider.SpiderProgram
                                         sqlStr = $"insert into IcookMenu (Url,IsValid)values('{menuUrl}',1)";
                                         sh.ExeSqlOut(sqlStr);
                                         urlCount++;
-                                        myUtils.UpdateLabel3(label3, urlCount);
+                                        myUtils.UpdateLabel(label3, urlCount);
                                     }
                                     catch (Exception e)
                                     {
@@ -265,9 +265,9 @@ namespace JiangxiGanzhouSpider.SpiderProgram
                     sqlStr = $"UPDATE IcookMenu SET IsDownload = 1 WHERE Url = '{menuUrl}'";
                     sh.RunSql(sqlStr);
                     htmlCount++;
-                    myUtils.UpdateLabel3(label3, htmlCount);
+                    myUtils.UpdateLabel(label3, htmlCount);
                 }
-                myUtils.UpdateListBox(listBox, title);
+                myUtils.UpdateListBox(listBox1, title);
             }
         }
     }

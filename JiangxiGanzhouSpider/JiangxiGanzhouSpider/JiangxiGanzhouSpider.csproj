@@ -95,6 +95,7 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="SpiderProgram\Icook.cs" />
+    <Compile Include="SpiderProgram\Teepr.cs" />
     <Compile Include="Tool\HttpHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
