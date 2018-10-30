@@ -46,7 +46,7 @@ namespace JiangxiGanzhouSpider.SpiderProgram
                 case 1:
                     {
                         DownLoadHtml();
-                        break;                   
+                        break;
                     }
                 case 2:
                     {
@@ -90,8 +90,10 @@ namespace JiangxiGanzhouSpider.SpiderProgram
 
                                 sqlStr = $"insert into IcookCategory (Url,IsDownLoad)values('{categoryUrl}',0)";
                                 sh.ExeSqlOut(sqlStr);
+
                                 urlCount++;
                                 myUtils.UpdateLabel(label3, urlCount);
+
                             }
                         }
                         catch (Exception ex)

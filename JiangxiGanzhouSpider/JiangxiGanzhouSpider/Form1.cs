@@ -42,6 +42,7 @@ namespace JiangxiGanzhouSpider
                 th.Start(1);
 
                 this.button1.Text = "暂停";
+                this.button2.Text = "下载链接";
             }
             else
             {
@@ -60,6 +61,7 @@ namespace JiangxiGanzhouSpider
                 th.IsBackground = true;
                 th.Start(2);
                 this.button2.Text = "暂停";
+                this.button1.Text = "下载html";
             }
             else
             {
@@ -88,20 +90,23 @@ namespace JiangxiGanzhouSpider
             }
             switch (webSiteName)
             {
-                case "Icook":
+                case "icook":
                     {
                         Icook icook = new Icook(this.listBox1, this.label3);
                         icook.StartSpider(option);
                         break;
                     }
-                case "Teepr":
+                case "teepr":
                     {
                         Teepr teepr = new Teepr(this.listBox1, this.label3);
                         teepr.StartSpider(option);
                         break;
                     }
                 default:
-                    break;
+                    {
+                        MessageBox.Show("该网站不存在！");
+                        break;
+                    }
             }
         }
         /// <summary>
