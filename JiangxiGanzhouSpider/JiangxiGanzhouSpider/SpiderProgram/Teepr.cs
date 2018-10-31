@@ -48,6 +48,7 @@ namespace JiangxiGanzhouSpider.SpiderProgram
 
         public Teepr(ListBox listBox1, Label label3)
         {
+            GetTotalPage("https://www.teepr.com/category/%e7%94%9f%e6%b4%bb/%e9%a3%9f%e7%89%a9/page/224/");
             this.listBox1 = listBox1;
             this.label3 = label3;
             hh = new HttpHelper();
@@ -89,33 +90,63 @@ namespace JiangxiGanzhouSpider.SpiderProgram
         /// </summary>
         public void DownLoadNewsUrl()
         {
-            for (int i = 0; i < 100000; i++)
-            {
-                myUtils.UpdateLabel(label3, i);
-                myUtils.UpdateListBox(listBox1, i.ToString());
-                Thread.Sleep(1000);
-            }
             string sqlStr = "select Url from TeeprCategory where IsDownload = 0";
             object[] UrlObj = sh.GetField(sqlStr);
-            ArrayList mainList = hh.GetHtmlData(mainUrl, cookie);
+            HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
+            ArrayList httpList = hh.GetHtmlData(mainUrl, cookie);
+            string lastPageurl, pageUrl, newsUrl = string.Empty;
+            int totalPages, newUrlCount = 0;
             foreach (var urlObj in UrlObj)
             {
-                ArrayList categoryAList = hh.GetHtmlData(urlObj.ToString(), cookie);
+                pageUrl = urlObj.ToString() + @"page/";
+                httpList = hh.GetHtmlData(urlObj.ToString(), cookie);
+                doc.LoadHtml(httpList[1].ToString());
+                HtmlNode lastANode = doc.DocumentNode.SelectSingleNode("//div[@id='simple-pagination']/div[@class='pagination']/a[@class='last']");
+                lastPageurl = lastANode.GetAttributeValue("href", "");
+                totalPages = GetTotalPage(lastPageurl);
+                for (int i = 1; i < totalPages + 1; i++)
+                {
+                    pageUrl = pageUrl + i + @"/";
+                    httpList = hh.GetHtmlData(pageUrl.ToString(), cookie);
+                    doc.LoadHtml(httpList[1].ToString());
+                    HtmlNodeCollection newsNodeList = doc.DocumentNode.SelectNodes("//div[@class='content_box']/article/a[@class='clearfix']");
+                    foreach (var newsNode in newsNodeList)
+                    {
+                        newsUrl = newsNode.GetAttributeValue("href", "");
 
+                        sqlStr = $"insert into TeeprNewsUrl (Url,IsDownLoad)values('{newsUrl}',0)";
+                        sh.ExeSqlOut(sqlStr);
+                        newUrlCount++;
+                        myUtils.UpdateLabel(label3, newUrlCount);
+                    }
+                }
             }
-           
         }
         /// <summary>
         /// 下载html
         /// </summary>
         public void DownLoadHtml()
         {
-            for (int i = 0; i < 100000; i++)
+            string sqlStr = "select Url from TeeprNewsUrl where IsDownload = 0";
+            object[] newsUrlObj = sh.GetField(sqlStr);
+
+            foreach (var newsUrl in newsUrlObj)
             {
-                myUtils.UpdateLabel(label3, i);
-                myUtils.UpdateListBox(listBox1, i.ToString());
-                Thread.Sleep(1000);
+
             }
+        }
+        /// <summary>
+        /// 获取总页数
+        /// </summary>
+        /// <param name="lastPageurl"></param>
+        /// <returns></returns>
+        public int GetTotalPage(string lastPageurl)
+        {
+            int totalPages = 0;
+            string[] urlArr = lastPageurl.Split('/');
+            if (myUtils.IsNumeric(urlArr[urlArr.Length - 1]))
+                totalPages = int.Parse(urlArr[urlArr.Length - 1]);
+            return totalPages;
         }
 
         #region 目录连接拼接
@@ -145,7 +176,7 @@ namespace JiangxiGanzhouSpider.SpiderProgram
                 categoryList.Add(playUrl + item + @"/");
             }
             string sqlStr, simpleWordUrl = string.Empty;
-
+            int categoryCount = 0;
             foreach (var item in categoryList)
             {
                 try
@@ -153,6 +184,8 @@ namespace JiangxiGanzhouSpider.SpiderProgram
                     simpleWordUrl = myUtils.StringConvert(item, 1);
                     sqlStr = $"insert into TeeprCategory (Url,IsDownLoad)values('{simpleWordUrl}',0)";
                     sh.ExeSqlOut(sqlStr);
+                    categoryCount++;
+                    myUtils.UpdateLabel(label3, categoryCount);
                 }
                 catch (Exception ex)
                 {

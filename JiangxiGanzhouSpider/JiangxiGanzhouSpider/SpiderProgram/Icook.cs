@@ -90,10 +90,8 @@ namespace JiangxiGanzhouSpider.SpiderProgram
 
                                 sqlStr = $"insert into IcookCategory (Url,IsDownLoad)values('{categoryUrl}',0)";
                                 sh.ExeSqlOut(sqlStr);
-
                                 urlCount++;
                                 myUtils.UpdateLabel(label3, urlCount);
-
                             }
                         }
                         catch (Exception ex)
@@ -142,7 +140,7 @@ namespace JiangxiGanzhouSpider.SpiderProgram
                                         if (!menuUrl.Contains(mainUrl))
                                             menuUrl = mainUrl + menuUrl;
 
-                                        sqlStr = $"insert into IcookMenu (Url,IsValid)values('{menuUrl}',1)";
+                                        sqlStr = $"insert into IcookMenu (Url,IsDownLoad)values('{menuUrl}',0)";
                                         sh.ExeSqlOut(sqlStr);
                                         urlCount++;
                                         myUtils.UpdateLabel(label3, urlCount);

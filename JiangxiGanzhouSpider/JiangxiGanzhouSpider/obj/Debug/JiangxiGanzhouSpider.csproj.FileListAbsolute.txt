@@ -48,3 +48,4 @@ F:\Private\江西赣州采集\JiangxiGanzhouSpider\JiangxiGanzhouSpider\obj\Debu
 F:\Private\江西赣州采集\JiangxiGanzhouSpider\JiangxiGanzhouSpider\obj\Debug\JiangxiGanzhouSpider.csproj.CopyComplete
 F:\Private\江西赣州采集\JiangxiGanzhouSpider\JiangxiGanzhouSpider\obj\Debug\JiangxiGanzhouSpider.exe
 F:\Private\江西赣州采集\JiangxiGanzhouSpider\JiangxiGanzhouSpider\obj\Debug\JiangxiGanzhouSpider.pdb
+F:\Private\江西赣州采集\JiangxiGanzhouSpider\JiangxiGanzhouSpider\obj\Debug\JiangxiGanzhouSpider.csprojResolveAssemblyReference.cache
