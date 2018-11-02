@@ -81,15 +81,52 @@ namespace JiangxiGanzhouSpider.Tool
             try
             {
                 filePath = Regex.Replace(filePath, "[&nbsp;]", "");//去 &nbsp;
-                filePath = Regex.Replace(filePath, "[|「」，<>]", "");//去 \r\n\t
+                filePath = Regex.Replace(filePath, "[|「」，<>：*？\"/]", "");//去 \r\n\t
                 filePath = Regex.Replace(filePath, "\\s{2,}", "");//去空格
+                filePath = filePath.Replace("/", "");
+                filePath = filePath.Replace("？", "");
+                filePath = InvalidFileName(filePath);
+                filePath = InvalidPath(filePath);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                WriteLog(ex);
+            }
+            return filePath;
+        }
+        /// <summary>
+        /// 去除掉文名中的非法字符
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <param name="repStr"></param>
+        /// <returns></returns>
+        public string InvalidFileName(string fileName = "", string repStr = "_")
+        {
+            // 例如： fileName = "文件/名称"
+            foreach (char invalidChar in Path.GetInvalidFileNameChars())
+            {
+                fileName = fileName.Replace(invalidChar.ToString(), repStr);
+            }
+            //结果：文件_名称
+            return fileName;
+        }
+        /// <summary>
+        /// 去掉路径中的非法字符
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="repStr"></param>
+        /// <returns></returns>
+        public string InvalidPath(string path, string repStr = "_")
+        {
+            //剔除路径字符串中非法的字符
+            //例如 path = "路径\ds"
+            foreach (char invalidChar in Path.GetInvalidPathChars())
+            {
+                path = path.Replace(invalidChar.ToString(), repStr);
             }
 
-            return filePath;
+            //结果：路径_ds
+            return path;
         }
         /// <summary>
         /// 汉字繁简互转
@@ -155,8 +192,9 @@ namespace JiangxiGanzhouSpider.Tool
                 //doc.Save(fullPath);
                 return true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                WriteLog(e);
                 return false;
             }
         }
@@ -215,12 +253,19 @@ namespace JiangxiGanzhouSpider.Tool
         /// <param name="url">下载路径</param>
         /// <param name="desPath">目标路径</param>
         /// <returns></returns>
-        public void DownLoadImage(string url, string path ,CookieContainer cookie)
+        public void DownLoadImage(string url, string path, CookieContainer cookie)
         {
-            HttpHelper hh = new HttpHelper();
-            byte[] byteArr = hh.DowloadCheckImg(url, cookie);
-            Image image = GetImageByBytes(byteArr);
-            image.Save(path, ImageFormat.Jpeg);
+            try
+            {
+                HttpHelper hh = new HttpHelper();
+                byte[] byteArr = hh.DowloadCheckImg(url, cookie);
+                Image image = GetImageByBytes(byteArr);
+                image.Save(path, ImageFormat.Jpeg);
+            }
+            catch (Exception e)
+            {
+                WriteLog(e);
+            }
         }
         /// <summary>
         /// 读取byte[]并转化为图片
@@ -229,10 +274,54 @@ namespace JiangxiGanzhouSpider.Tool
         /// <returns>Image</returns>
         public Image GetImageByBytes(byte[] bytes)
         {
-            MemoryStream ms = new MemoryStream(bytes);
-            Image image = System.Drawing.Image.FromStream(ms);
+            Image image = null;
+            try
+            {
+                MemoryStream ms = new MemoryStream(bytes);
+                image = System.Drawing.Image.FromStream(ms);
+            }
+            catch (Exception e)
+            {
+                WriteLog(e);
+            }
             return image;
         }
+        /// <summary>
+        /// 日志打印
+        /// </summary>
+        /// <param name="log"></param>
+        public void WriteLog(object logObj)
+        {
+            string log = logObj.ToString();
+            try
+            {
+                string path = AppDomain.CurrentDomain.BaseDirectory + "log\\";//日志文件夹
+                DirectoryInfo dir = new DirectoryInfo(path);
+                if (!dir.Exists)//判断文件夹是否存在
+                    dir.Create();//不存在则创建
 
+                FileInfo[] subFiles = dir.GetFiles();//获取该文件夹下的所有文件
+                foreach (FileInfo f in subFiles)
+                {
+                    string fname = Path.GetFileNameWithoutExtension(f.FullName); //获取文件名，没有后缀
+                    DateTime start = Convert.ToDateTime(fname);//文件名转换成时间
+                    DateTime end = Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd"));//获取当前日期
+                    TimeSpan sp = end.Subtract(start);//计算时间差
+                    if (sp.Days > 30)//大于30天删除
+                        f.Delete();
+                }
+
+                string logName = DateTime.Now.ToString("yyyy-MM-dd") + ".log";//日志文件名称，按照当天的日期命名
+                string fullPath = path + logName;//日志文件的完整路径
+                string contents = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " -> " + log + "\r\n";//日志内容
+
+                File.AppendAllText(fullPath, contents, Encoding.UTF8);//追加日志
+
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
     }
 }

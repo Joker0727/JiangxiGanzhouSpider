@@ -94,14 +94,16 @@ namespace JiangxiGanzhouSpider.SpiderProgram
                                 myUtils.UpdateLabel(label3, urlCount);
                             }
                         }
-                        catch (Exception ex)
+                        catch (Exception e)
                         {
+                            myUtils.WriteLog(e);
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
+                myUtils.WriteLog(ex);
             }
         }
         /// <summary>
@@ -147,21 +149,25 @@ namespace JiangxiGanzhouSpider.SpiderProgram
                                     }
                                     catch (Exception e)
                                     {
+                                        myUtils.WriteLog(e);
                                     }
                                 }
                             }
                             catch (Exception x)
                             {
+                                myUtils.WriteLog(x);
                             }
                         }
                     }
                     catch (Exception y)
                     {
+                        myUtils.WriteLog(y);
                     }
                 }
             }
             catch (Exception ey)
             {
+                myUtils.WriteLog(ey);
             }
         }
         /// <summary>
@@ -185,6 +191,7 @@ namespace JiangxiGanzhouSpider.SpiderProgram
             }
             catch (Exception ex)
             {
+                myUtils.WriteLog(ex);
             }
             return totalPage;
         }
@@ -203,71 +210,81 @@ namespace JiangxiGanzhouSpider.SpiderProgram
             int htmlCount = 0;
             foreach (var menuUrl in menuUrlObj)
             {
-                ArrayList menuResList = hh.GetHtmlData(menuUrl.ToString(), cookie);
-                doc.LoadHtml(menuResList[1].ToString());
-
-                HtmlNode h1Node = doc.DocumentNode.SelectSingleNode("//div[@class='recipe-details-header-title']/h1[@class='title']");
-                title = myUtils.StringConvert(h1Node.InnerText).Trim();//标题
-                fullFoldPath = outPath + title + @"\";
-                if (!Directory.Exists(fullFoldPath))//判断是否存在
-                    Directory.CreateDirectory(fullFoldPath);//创建新路径
-                HtmlNode headerNode = doc.DocumentNode.SelectSingleNode("//div[@class='recipe-details-header recipe-details-block']");
-                HtmlNode headerChild = doc.DocumentNode.SelectSingleNode("//div[@class='recipe-details-header recipe-details-block']/div[@class='header-row center-row']");
-                HtmlNode rightChild = doc.DocumentNode.SelectSingleNode("//div[@class='recipe-details-header recipe-details-block']/div[@class='header-row center-row']/div[@class='header-col right-col']");
-                headerChild.RemoveChild(rightChild);//删除右边
-
-                HtmlNode headerImgParentNode = doc.DocumentNode.SelectSingleNode("//div[@class='recipe-details-header recipe-details-block']/div[@class='header-row center-row']/div[@class='header-col left-col']/div[@class='recipe-cover']");
-                HtmlNode headerImgChild = doc.DocumentNode.SelectSingleNode("//img[@class='main-pic']");
-                string headerImgSrc = headerImgChild.GetAttributeValue("src", "");
-                myUtils.DownLoadImage(headerImgSrc, fullFoldPath + @"图片1.jpg", cookie);
-                headerImgParentNode.RemoveAllChildren();
-
-                HtmlNode newheaderImgNode = doc.CreateElement("div");
-                newheaderImgNode.InnerHtml = $"图片--------------------------{1}-------------------------";
-                headerImgParentNode.AppendChild(newheaderImgNode);
-
-                string headerHtml = headerNode.InnerHtml;//头部内容  
-
-                HtmlNode mainNode = doc.DocumentNode.SelectSingleNode("//div[@class='recipe-details-main']");
-                HtmlNode mainChild = doc.DocumentNode.SelectSingleNode("//div[@class='recipe-details-main']/div[@class='recipe-ad-placeholder']");
-                mainNode.RemoveChild(mainChild);
-
-                HtmlNodeCollection imgParentNodeList = doc.DocumentNode.SelectNodes("//div[@class='step-cover']");
-                if (imgParentNodeList != null)
+                try
                 {
-                    for (int i = 1; i < imgParentNodeList.Count + 1; i++)
+                    ArrayList menuResList = hh.GetHtmlData(menuUrl.ToString(), cookie);
+                    doc.LoadHtml(menuResList[1].ToString());
+
+                    HtmlNode h1Node = doc.DocumentNode.SelectSingleNode("//div[@class='recipe-details-header-title']/h1[@class='title']");
+                    title = myUtils.StringConvert(h1Node.InnerText).Trim();//标题
+                    title = myUtils.FilterPath(title);
+                    fullFoldPath = outPath + title + @"\";
+                    if (!Directory.Exists(fullFoldPath))//判断是否存在
+                        Directory.CreateDirectory(fullFoldPath);//创建新路径
+                    HtmlNode headerNode = doc.DocumentNode.SelectSingleNode("//div[@class='recipe-details-header recipe-details-block']");
+                    HtmlNode headerChild = doc.DocumentNode.SelectSingleNode("//div[@class='recipe-details-header recipe-details-block']/div[@class='header-row center-row']");
+                    HtmlNode rightChild = doc.DocumentNode.SelectSingleNode("//div[@class='recipe-details-header recipe-details-block']/div[@class='header-row center-row']/div[@class='header-col right-col']");
+                    headerChild.RemoveChild(rightChild);//删除右边
+
+                    HtmlNode headerImgParentNode = doc.DocumentNode.SelectSingleNode("//div[@class='recipe-details-header recipe-details-block']/div[@class='header-row center-row']/div[@class='header-col left-col']/div[@class='recipe-cover']");
+                    HtmlNode headerImgChild = doc.DocumentNode.SelectSingleNode("//img[@class='main-pic']");
+                    string headerImgSrc = headerImgChild.GetAttributeValue("src", "");
+                    myUtils.DownLoadImage(headerImgSrc, fullFoldPath + @"图片1.jpg", cookie);
+                    headerImgParentNode.RemoveAllChildren();
+
+                    HtmlNode newheaderImgNode = doc.CreateElement("div");
+                    newheaderImgNode.InnerHtml = $"图片{1}";
+                    headerImgParentNode.AppendChild(newheaderImgNode);
+
+                    string headerHtml = headerNode.InnerHtml;//头部内容  
+
+                    HtmlNode mainNode = doc.DocumentNode.SelectSingleNode("//div[@class='recipe-details-main']");
+                    HtmlNode mainChild = doc.DocumentNode.SelectSingleNode("//div[@class='recipe-details-main']/div[@class='recipe-ad-placeholder']");
+                    mainNode.RemoveChild(mainChild);
+
+                    HtmlNodeCollection imgParentNodeList = doc.DocumentNode.SelectNodes("//div[@class='step-cover']");
+                    if (imgParentNodeList != null)
                     {
-                        try
+                        for (int i = 1; i < imgParentNodeList.Count + 1; i++)
                         {
-                            HtmlNode imgChildNode = imgParentNodeList[i].SelectSingleNode("//a[@class='strip']");
-                            string imgUrl = imgChildNode.GetAttributeValue("href", "").Replace("medium_", "large_");
-                            myUtils.DownLoadImage(imgUrl, fullFoldPath + $"图片{i + 1}.jpg", cookie);
-                            imgParentNodeList[i].RemoveAllChildren();
-                            HtmlNode newImgNode = doc.CreateElement("div");
-                            newImgNode.InnerHtml = $"图片--------------------------{i + 1}-------------------------";
-                            imgParentNodeList[i].AppendChild(newImgNode);
-                        }
-                        catch (Exception e)
-                        {
+                            try
+                            {
+                                HtmlNode imgChildNode = imgParentNodeList[i].SelectSingleNode("//a[@class='strip']");
+                                string imgUrl = imgChildNode.GetAttributeValue("href", "").Replace("medium_", "large_");
+                                myUtils.DownLoadImage(imgUrl, fullFoldPath + $"图片{i + 1}.jpg", cookie);
+                                imgParentNodeList[i].RemoveAllChildren();
+                                HtmlNode newImgNode = doc.CreateElement("div");
+                                newImgNode.InnerHtml = $"图片{i + 1}";
+                                imgParentNodeList[i].AppendChild(newImgNode);
+                            }
+                            catch (Exception ex)
+                            {
+                                myUtils.WriteLog(ex);
+                            }
                         }
                     }
-                }
 
-                string mainStr = mainNode.InnerHtml;//主题内容
-                string allStr = headerHtml + mainStr;
+                    string mainStr = mainNode.InnerHtml;//主题内容
+                    string allStr = headerHtml + mainStr;
 
-                // sqlStr = $"UPDATE IcookMenu SET Title = '{title}', Html = '{allStr}' WHERE Url = '{menuUrl}'";
-                sqlStr = $"UPDATE IcookMenu SET Title = '{title}' WHERE Url = '{menuUrl}'";
-                sh.RunSql(sqlStr);
-
-                if (myUtils.TransToWord(allStr, title, fullFoldPath))
-                {
-                    sqlStr = $"UPDATE IcookMenu SET IsDownload = 1 WHERE Url = '{menuUrl}'";
+                    // sqlStr = $"UPDATE IcookMenu SET Title = '{title}', Html = '{allStr}' WHERE Url = '{menuUrl}'";
+                    sqlStr = $"UPDATE IcookMenu SET Title = '{title}' WHERE Url = '{menuUrl}'";
                     sh.RunSql(sqlStr);
-                    htmlCount++;
-                    myUtils.UpdateLabel(label3, htmlCount);
+
+                    if (myUtils.TransToWord(allStr, title, fullFoldPath))
+                    {
+                        sqlStr = $"UPDATE IcookMenu SET IsDownload = 1 WHERE Url = '{menuUrl}'";
+                        sh.RunSql(sqlStr);
+                        htmlCount++;
+                        myUtils.UpdateLabel(label3, htmlCount);
+                        myUtils.UpdateListBox(listBox1, title);
+                    }
+
                 }
-                myUtils.UpdateListBox(listBox1, title);
+                catch (Exception e)
+                {
+                    myUtils.WriteLog(e);
+                }
             }
         }
     }

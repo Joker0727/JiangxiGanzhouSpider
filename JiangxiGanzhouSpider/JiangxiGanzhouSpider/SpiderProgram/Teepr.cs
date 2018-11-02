@@ -48,7 +48,6 @@ namespace JiangxiGanzhouSpider.SpiderProgram
 
         public Teepr(ListBox listBox1, Label label3)
         {
-            GetTotalPage("https://www.teepr.com/category/%e7%94%9f%e6%b4%bb/%e9%a3%9f%e7%89%a9/page/224/");
             this.listBox1 = listBox1;
             this.label3 = label3;
             hh = new HttpHelper();
@@ -98,27 +97,50 @@ namespace JiangxiGanzhouSpider.SpiderProgram
             int totalPages, newUrlCount = 0;
             foreach (var urlObj in UrlObj)
             {
-                pageUrl = urlObj.ToString() + @"page/";
-                httpList = hh.GetHtmlData(urlObj.ToString(), cookie);
-                doc.LoadHtml(httpList[1].ToString());
-                HtmlNode lastANode = doc.DocumentNode.SelectSingleNode("//div[@id='simple-pagination']/div[@class='pagination']/a[@class='last']");
-                lastPageurl = lastANode.GetAttributeValue("href", "");
-                totalPages = GetTotalPage(lastPageurl);
-                for (int i = 1; i < totalPages + 1; i++)
+                try
                 {
-                    pageUrl = pageUrl + i + @"/";
-                    httpList = hh.GetHtmlData(pageUrl.ToString(), cookie);
+                    pageUrl = urlObj.ToString();
+                    httpList = hh.GetHtmlData(urlObj.ToString(), cookie);
                     doc.LoadHtml(httpList[1].ToString());
-                    HtmlNodeCollection newsNodeList = doc.DocumentNode.SelectNodes("//div[@class='content_box']/article/a[@class='clearfix']");
-                    foreach (var newsNode in newsNodeList)
+                    HtmlNode lastANode = doc.DocumentNode.SelectSingleNode("//div[@id='simple-pagination']/div[@class='pagination']/a[@class='last']");
+                    lastPageurl = lastANode.GetAttributeValue("href", "");
+                    totalPages = GetTotalPage(lastPageurl);
+                    for (int i = 1; i < totalPages + 1; i++)
                     {
-                        newsUrl = newsNode.GetAttributeValue("href", "");
-
-                        sqlStr = $"insert into TeeprNewsUrl (Url,IsDownLoad)values('{newsUrl}',0)";
-                        sh.ExeSqlOut(sqlStr);
-                        newUrlCount++;
-                        myUtils.UpdateLabel(label3, newUrlCount);
+                        try
+                        {
+                            if (i > 1)
+                                newsUrl = pageUrl + @"page/" + i + @"/";
+                            else
+                                newsUrl = pageUrl;
+                            httpList = hh.GetHtmlData(pageUrl.ToString(), cookie);
+                            doc.LoadHtml(httpList[1].ToString());
+                            HtmlNodeCollection newsNodeList = doc.DocumentNode.SelectNodes("//div[@id='content_box']/article/a[@class='clearfix']");
+                            foreach (var newsNode in newsNodeList)
+                            {
+                                try
+                                {
+                                    newsUrl = newsNode.GetAttributeValue("href", "");
+                                    sqlStr = "insert into TeeprNewsUrl (Url,IsDownLoad)values('"+ newsUrl + "',0)";
+                                    sh.ExeSqlOut(sqlStr);
+                                    newUrlCount++;
+                                    myUtils.UpdateLabel(label3, newUrlCount);
+                                }
+                                catch (Exception ex)
+                                {
+                                    myUtils.WriteLog(ex);
+                                }
+                            }
+                        }
+                        catch (Exception er)
+                        {
+                            myUtils.WriteLog(er);
+                        }
                     }
+                }
+                catch (Exception et)
+                {
+                    myUtils.WriteLog(et);
                 }
             }
         }
@@ -129,10 +151,83 @@ namespace JiangxiGanzhouSpider.SpiderProgram
         {
             string sqlStr = "select Url from TeeprNewsUrl where IsDownload = 0";
             object[] newsUrlObj = sh.GetField(sqlStr);
-
+            HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
+            ArrayList httpList = hh.GetHtmlData(mainUrl, cookie);
+            string title, htmlStr, fullFoldPath = string.Empty;
+            int htmlCount = 0;
             foreach (var newsUrl in newsUrlObj)
             {
+                try
+                {
+                    httpList = hh.GetHtmlData(newsUrl.ToString(), cookie);
+                    doc.LoadHtml(httpList[1].ToString());
+                    HtmlNode titleNode = doc.DocumentNode.SelectSingleNode("//h1[@class='title single-title']");
+                    title = titleNode.InnerText;
+                    title = myUtils.StringConvert(title).Trim();
+                    title = myUtils.FilterPath(title);
+                    fullFoldPath = outPath + title + @"\";
+                    if (!Directory.Exists(fullFoldPath))
+                        Directory.CreateDirectory(fullFoldPath);
+                    HtmlNode mianContentNode = doc.DocumentNode.SelectSingleNode("//div[@class='post-single-wrapper']");
+                    HtmlNodeCollection adNodeList = doc.DocumentNode.SelectNodes("//div[@class='post-single-wrapper']/div[@class='mid-post-ad-2']");
+                    foreach (HtmlNode adNode in adNodeList)
+                    {
+                        try
+                        {
+                            mianContentNode.RemoveChild(adNode);
+                        }
+                        catch (Exception ex)
+                        {
+                            myUtils.WriteLog(ex);
+                        }
+                    }
+                    HtmlNodeCollection imgDivNodeList = doc.DocumentNode.SelectNodes("//div[@class='post-single-wrapper']/div");
+                    HtmlNodeCollection imgList = doc.DocumentNode.SelectNodes("//div[@class='post-single-wrapper']/div/img");
+                    string imgUrl = string.Empty;
+                    int imgCount = 0;
+                    for (int i = 0; i < imgDivNodeList.Count(); i++)
+                    {
+                        try
+                        {
+                            HtmlNode imgNode = imgDivNodeList[i].FirstChild;
+                            if (imgNode != null)
+                            {
+                                imgUrl = imgNode.GetAttributeValue("src", "");
+                                if ((!string.IsNullOrEmpty(imgUrl) || imgUrl.Contains(".jpg") ||
+                                    imgUrl.Contains(".png") || imgUrl.Contains(".JPEG"))
+                                    && (!imgUrl.Contains("video") && !imgUrl.Contains("width")))
+                                {
+                                    myUtils.DownLoadImage(imgUrl, fullFoldPath + $"图片{imgCount + 1}.jpg", cookie);
+                                    imgDivNodeList[i].RemoveChild(imgNode);
+                                    HtmlNode newImgNode = doc.CreateElement("div");
+                                    newImgNode.InnerHtml = $"图片{imgCount + 1}";
+                                    imgDivNodeList[i].AppendChild(newImgNode);
+                                    imgCount++;
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            myUtils.WriteLog(e);
+                        }
+                    }
+                    htmlStr = mianContentNode.InnerHtml;
 
+                    sqlStr = $"UPDATE TeeprNewsUrl SET Title = '{title}' WHERE Url = '{newsUrl}'";
+                    sh.RunSql(sqlStr);
+                    if (myUtils.TransToWord(htmlStr, title, fullFoldPath))
+                    {
+                        sqlStr = $"UPDATE TeeprNewsUrl SET IsDownload = 1 WHERE Url = '{newsUrl}'";
+                        sh.RunSql(sqlStr);
+                        htmlCount++;
+                        myUtils.UpdateLabel(label3, htmlCount);
+                        myUtils.UpdateListBox(listBox1, title);
+                    }
+                }
+                catch (Exception ew)
+                {
+                    myUtils.WriteLog(ew);
+                }
             }
         }
         /// <summary>
@@ -144,8 +239,8 @@ namespace JiangxiGanzhouSpider.SpiderProgram
         {
             int totalPages = 0;
             string[] urlArr = lastPageurl.Split('/');
-            if (myUtils.IsNumeric(urlArr[urlArr.Length - 1]))
-                totalPages = int.Parse(urlArr[urlArr.Length - 1]);
+            if (myUtils.IsNumeric(urlArr[urlArr.Length - 2]))
+                totalPages = int.Parse(urlArr[urlArr.Length - 2]);
             return totalPages;
         }
 
@@ -189,7 +284,7 @@ namespace JiangxiGanzhouSpider.SpiderProgram
                 }
                 catch (Exception ex)
                 {
-
+                    myUtils.WriteLog(ex);
                 }
             }
         }
