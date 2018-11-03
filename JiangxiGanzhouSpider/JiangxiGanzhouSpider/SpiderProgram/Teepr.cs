@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -113,7 +114,7 @@ namespace JiangxiGanzhouSpider.SpiderProgram
                                 newsUrl = pageUrl + @"page/" + i + @"/";
                             else
                                 newsUrl = pageUrl;
-                            httpList = hh.GetHtmlData(pageUrl.ToString(), cookie);
+                            httpList = hh.GetHtmlData(newsUrl.ToString(), cookie);
                             doc.LoadHtml(httpList[1].ToString());
                             HtmlNodeCollection newsNodeList = doc.DocumentNode.SelectNodes("//div[@id='content_box']/article/a[@class='clearfix']");
                             foreach (var newsNode in newsNodeList)
@@ -211,8 +212,8 @@ namespace JiangxiGanzhouSpider.SpiderProgram
                             myUtils.WriteLog(e);
                         }
                     }
+                   
                     htmlStr = mianContentNode.InnerHtml;
-
                     sqlStr = $"UPDATE TeeprNewsUrl SET Title = '{title}' WHERE Url = '{newsUrl}'";
                     sh.RunSql(sqlStr);
                     if (myUtils.TransToWord(htmlStr, title, fullFoldPath))
