@@ -60,6 +60,26 @@ namespace JiangxiGanzhouSpider.SpiderProgram
 
         public void StartSpider(object obj)
         {
+            ArrayList httpList = null;
+            bool isNetOk = true;
+            try
+            {
+                httpList = hh.GetHtmlData(mainUrl, cookie);
+            }
+            catch (Exception ex)
+            {
+                isNetOk = false;
+            }
+            if (httpList == null)
+                isNetOk = false;
+            else if (httpList.Count != 3)
+                isNetOk = false;
+
+            if (!isNetOk)
+            {
+                MessageBox.Show("请确认网络可以正常访问 https://www.teepr.com/", "Teepr");
+                return;
+            }
             int option = int.Parse(obj.ToString());
             switch (option)
             {
@@ -122,7 +142,7 @@ namespace JiangxiGanzhouSpider.SpiderProgram
                                 try
                                 {
                                     newsUrl = newsNode.GetAttributeValue("href", "");
-                                    sqlStr = "insert into TeeprNewsUrl (Url,IsDownLoad)values('"+ newsUrl + "',0)";
+                                    sqlStr = "insert into TeeprNewsUrl (Url,IsDownLoad)values('" + newsUrl + "',0)";
                                     sh.ExeSqlOut(sqlStr);
                                     newUrlCount++;
                                     myUtils.UpdateLabel(label3, newUrlCount);
@@ -185,37 +205,43 @@ namespace JiangxiGanzhouSpider.SpiderProgram
                     HtmlNodeCollection imgDivNodeList = doc.DocumentNode.SelectNodes("//div[@class='post-single-wrapper']/div");
                     HtmlNodeCollection imgList = doc.DocumentNode.SelectNodes("//div[@class='post-single-wrapper']/div/img");
                     string imgUrl = string.Empty;
-                    int imgCount = 0;
-                    for (int i = 0; i < imgDivNodeList.Count(); i++)
+                    int totalImg = 0, imgCount = 0;
+                    if (imgDivNodeList != null)
                     {
-                        try
+                        totalImg = imgDivNodeList.Count();
+                        for (int i = 0; i < imgDivNodeList.Count(); i++)
                         {
-                            HtmlNode imgNode = imgDivNodeList[i].FirstChild;
-                            if (imgNode != null)
+                            try
                             {
-                                imgUrl = imgNode.GetAttributeValue("src", "");
-                                if ((!string.IsNullOrEmpty(imgUrl) || imgUrl.Contains(".jpg") ||
-                                    imgUrl.Contains(".png") || imgUrl.Contains(".JPEG"))
-                                    && (!imgUrl.Contains("video") && !imgUrl.Contains("width")))
+                                HtmlNode imgNode = imgDivNodeList[i].FirstChild;
+                                if (imgNode != null)
                                 {
-                                    myUtils.DownLoadImage(imgUrl, fullFoldPath + $"图片{imgCount + 1}.jpg", cookie);
-                                    imgDivNodeList[i].RemoveChild(imgNode);
-                                    HtmlNode newImgNode = doc.CreateElement("div");
-                                    newImgNode.InnerHtml = $"图片{imgCount + 1}";
-                                    imgDivNodeList[i].AppendChild(newImgNode);
-                                    imgCount++;
+                                    imgUrl = imgNode.GetAttributeValue("src", "");
+                                    if ((!string.IsNullOrEmpty(imgUrl) || imgUrl.Contains(".jpg") ||
+                                        imgUrl.Contains(".png") || imgUrl.Contains(".JPEG"))
+                                        && (!imgUrl.Contains("video") && !imgUrl.Contains("width")))
+                                    {
+                                        myUtils.DownLoadImage(imgUrl, fullFoldPath + $"图片{imgCount + 1}.jpg", cookie);
+                                        imgDivNodeList[i].RemoveChild(imgNode);
+                                        HtmlNode newImgNode = doc.CreateElement("div");
+                                        newImgNode.InnerHtml = $"图片{imgCount + 1}";
+                                        imgDivNodeList[i].AppendChild(newImgNode);
+                                        imgCount++;
+                                    }
                                 }
                             }
-                        }
-                        catch (Exception e)
-                        {
-                            myUtils.WriteLog(e);
+                            catch (Exception e)
+                            {
+                                myUtils.WriteLog(e);
+                            }
                         }
                     }
-                   
+
                     htmlStr = mianContentNode.InnerHtml;
                     sqlStr = $"UPDATE TeeprNewsUrl SET Title = '{title}' WHERE Url = '{newsUrl}'";
                     sh.RunSql(sqlStr);
+                    bool isOk = false;
+
                     if (myUtils.TransToWord(htmlStr, title, fullFoldPath))
                     {
                         sqlStr = $"UPDATE TeeprNewsUrl SET IsDownload = 1 WHERE Url = '{newsUrl}'";
@@ -223,6 +249,13 @@ namespace JiangxiGanzhouSpider.SpiderProgram
                         htmlCount++;
                         myUtils.UpdateLabel(label3, htmlCount);
                         myUtils.UpdateListBox(listBox1, title);
+                        isOk = true;
+                    }
+
+                    if (!isOk)
+                    {
+                        if (Directory.Exists(fullFoldPath))
+                            Directory.Delete(fullFoldPath, true);
                     }
                 }
                 catch (Exception ew)

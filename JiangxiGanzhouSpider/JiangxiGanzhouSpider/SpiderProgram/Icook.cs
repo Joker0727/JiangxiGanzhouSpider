@@ -243,19 +243,22 @@ namespace JiangxiGanzhouSpider.SpiderProgram
                     mainNode.RemoveChild(mainChild);
 
                     HtmlNodeCollection imgParentNodeList = doc.DocumentNode.SelectNodes("//div[@class='step-cover']");
+                    int totalImgCount = 0, index = 0;
                     if (imgParentNodeList != null)
                     {
+                        totalImgCount = imgParentNodeList.Count();
                         for (int i = 1; i < imgParentNodeList.Count + 1; i++)
                         {
                             try
                             {
-                                HtmlNode imgChildNode = imgParentNodeList[i].SelectSingleNode("//a[@class='strip']");
+                                HtmlNode imgChildNode = imgParentNodeList[i - 1].SelectSingleNode("a");
                                 string imgUrl = imgChildNode.GetAttributeValue("href", "").Replace("medium_", "large_");
                                 myUtils.DownLoadImage(imgUrl, fullFoldPath + $"图片{i + 1}.jpg", cookie);
-                                imgParentNodeList[i].RemoveAllChildren();
+                                imgParentNodeList[i - 1].RemoveAllChildren();
                                 HtmlNode newImgNode = doc.CreateElement("div");
                                 newImgNode.InnerHtml = $"图片{i + 1}";
-                                imgParentNodeList[i].AppendChild(newImgNode);
+                                imgParentNodeList[i - 1].AppendChild(newImgNode);
+                                index++;
                             }
                             catch (Exception ex)
                             {
@@ -270,16 +273,25 @@ namespace JiangxiGanzhouSpider.SpiderProgram
                     // sqlStr = $"UPDATE IcookMenu SET Title = '{title}', Html = '{allStr}' WHERE Url = '{menuUrl}'";
                     sqlStr = $"UPDATE IcookMenu SET Title = '{title}' WHERE Url = '{menuUrl}'";
                     sh.RunSql(sqlStr);
-
-                    if (myUtils.TransToWord(allStr, title, fullFoldPath))
+                    bool isOk = false;
+                    if (totalImgCount == index)
                     {
-                        sqlStr = $"UPDATE IcookMenu SET IsDownload = 1 WHERE Url = '{menuUrl}'";
-                        sh.RunSql(sqlStr);
-                        htmlCount++;
-                        myUtils.UpdateLabel(label3, htmlCount);
-                        myUtils.UpdateListBox(listBox1, title);
+                        if (myUtils.TransToWord(allStr, title, fullFoldPath))
+                        {
+                            sqlStr = $"UPDATE IcookMenu SET IsDownload = 1 WHERE Url = '{menuUrl}'";
+                            sh.RunSql(sqlStr);
+                            htmlCount++;
+                            myUtils.UpdateLabel(label3, htmlCount);
+                            myUtils.UpdateListBox(listBox1, title);
+                            isOk = true;
+                        }
                     }
 
+                    if (!isOk)
+                    {
+                        if (Directory.Exists(fullFoldPath))
+                            Directory.Delete(fullFoldPath, true);
+                    }
                 }
                 catch (Exception e)
                 {

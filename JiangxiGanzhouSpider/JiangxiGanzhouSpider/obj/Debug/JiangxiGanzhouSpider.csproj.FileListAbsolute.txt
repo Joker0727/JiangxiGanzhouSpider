@@ -24,10 +24,10 @@ F:\Private\江西赣州采集\JiangxiGanzhouSpider\JiangxiGanzhouSpider\obj\Debu
 F:\Private\江西赣州采集\JiangxiGanzhouSpider\JiangxiGanzhouSpider\obj\Debug\JiangxiGanzhouSpider.exe
 F:\Private\江西赣州采集\JiangxiGanzhouSpider\JiangxiGanzhouSpider\obj\Debug\JiangxiGanzhouSpider.pdb
 F:\Private\江西赣州采集\JiangxiGanzhouSpider\JiangxiGanzhouSpider\obj\Debug\JiangxiGanzhouSpider.csprojResolveAssemblyReference.cache
+E:\Private\江西赣州\JiangxiGanzhouSpider\JiangxiGanzhouSpider\JiangxiGanzhouSpider\bin\Debug\Aspose.Cells.dll
 E:\Private\江西赣州\JiangxiGanzhouSpider\JiangxiGanzhouSpider\JiangxiGanzhouSpider\bin\Debug\JiangxiGanzhouSpider.exe.config
 E:\Private\江西赣州\JiangxiGanzhouSpider\JiangxiGanzhouSpider\JiangxiGanzhouSpider\bin\Debug\JiangxiGanzhouSpider.exe
 E:\Private\江西赣州\JiangxiGanzhouSpider\JiangxiGanzhouSpider\JiangxiGanzhouSpider\bin\Debug\JiangxiGanzhouSpider.pdb
-E:\Private\江西赣州\JiangxiGanzhouSpider\JiangxiGanzhouSpider\JiangxiGanzhouSpider\bin\Debug\Aspose.Cells.dll
 E:\Private\江西赣州\JiangxiGanzhouSpider\JiangxiGanzhouSpider\JiangxiGanzhouSpider\bin\Debug\Aspose.Pdf.dll
 E:\Private\江西赣州\JiangxiGanzhouSpider\JiangxiGanzhouSpider\JiangxiGanzhouSpider\bin\Debug\Aspose.Slides.dll
 E:\Private\江西赣州\JiangxiGanzhouSpider\JiangxiGanzhouSpider\JiangxiGanzhouSpider\bin\Debug\Aspose.Words.dll
