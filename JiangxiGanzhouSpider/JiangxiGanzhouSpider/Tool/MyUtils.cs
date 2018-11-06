@@ -1,9 +1,8 @@
 ﻿using Aspose.Words;
+using Aspose.Words.Replacing;
 using MyTool;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -183,13 +182,13 @@ namespace JiangxiGanzhouSpider.Tool
 
                 htmlLabel = StringConvert(htmlLabel);
                 htmlLabel = $"<!DOCTYPE html><html><head></head><body><div>{htmlLabel}</div></body></html>";
-                File.WriteAllText(fullPath, htmlLabel);
+                // File.WriteAllText(fullPath, htmlLabel);
 
-                //Document doc = new Document();
-                //DocumentBuilder builder = new DocumentBuilder(doc);
-                //builder.InsertHtml(htmlLabel);
+                Aspose.Words.Document doc = new Aspose.Words.Document();
+                Aspose.Words.DocumentBuilder builder = new Aspose.Words.DocumentBuilder(doc);
+                builder.InsertHtml(htmlLabel);
 
-                //doc.Save(fullPath);
+                doc.Save(fullPath);
                 return true;
             }
             catch (Exception e)
@@ -259,8 +258,8 @@ namespace JiangxiGanzhouSpider.Tool
             {
                 HttpHelper hh = new HttpHelper();
                 byte[] byteArr = hh.DowloadCheckImg(url, cookie);
-                Image image = GetImageByBytes(byteArr);
-                image.Save(path, ImageFormat.Jpeg);
+                System.Drawing.Image image = GetImageByBytes(byteArr);
+                image.Save(path, System.Drawing.Imaging.ImageFormat.Jpeg);
             }
             catch (Exception e)
             {
@@ -272,9 +271,9 @@ namespace JiangxiGanzhouSpider.Tool
         /// </summary>
         /// <param name="bytes">byte[]</param>
         /// <returns>Image</returns>
-        public Image GetImageByBytes(byte[] bytes)
+        public System.Drawing.Image GetImageByBytes(byte[] bytes)
         {
-            Image image = null;
+            System.Drawing.Image image = null;
             try
             {
                 MemoryStream ms = new MemoryStream(bytes);
@@ -322,6 +321,91 @@ namespace JiangxiGanzhouSpider.Tool
             {
 
             }
+        }
+        /// <summary>
+        /// 图片插入word
+        /// </summary>
+        public void InsertPictureToWord(string outPath, string title)
+        {
+            string folderPath = outPath + title + @"\";
+            try
+            {
+                List<string> imgNAmeList = GetImgs(folderPath);
+                //使用特殊字符串替换
+                Document doc = new Document(folderPath + title + ".doc");
+
+                foreach (var imgName in imgNAmeList)
+                {
+                    try
+                    {
+                        Regex reg = new Regex(imgName);
+                        doc.Range.Replace(reg, new ReplaceAndInsertImage(folderPath + $"{imgName}.jpg"), false);
+                    }
+                    catch (Exception ex)
+                    {
+                        WriteLog(ex);
+                    }
+                }
+                doc.Save(outPath + title + ".doc");
+                if (Directory.Exists(folderPath))
+                    Directory.Delete(folderPath, true);
+            }
+            catch (Exception e)
+            {
+                WriteLog(e);
+            }
+        }
+
+        /// <summary>
+        /// 获取指定文件夹下的所有图片名称
+        /// </summary>
+        /// <param name="imgFolder"></param>
+        public List<string> GetImgs(string imgFolder)
+        {
+            string imgtype = "*.BMP|*.JPG|*.GIF|*.PNG";
+            string[] ImageType = imgtype.Split('|');
+            List<string> imgList = new List<string>();
+            DirectoryInfo dir = new DirectoryInfo(imgFolder);
+
+            //获取该路径下的所有文件的列表
+            FileInfo[] fileInfo = dir.GetFiles();
+            //开始得到图片名称
+            foreach (FileInfo subinfo in fileInfo)
+            {
+                //判断扩展名是否相同
+                if (subinfo.Extension.ToLower() == ".jpg")
+                {
+                    string strname = subinfo.Name.Replace(".jpg", ""); //获取文件名称
+                    imgList.Add(strname); //把文件名称保存在泛型集合中
+                }
+            }
+            return imgList;
+        }
+    }
+    public class ReplaceAndInsertImage : IReplacingCallback
+    {
+        /// <summary>
+        /// 需要插入的图片路径
+        /// </summary>
+        public string url { get; set; }
+
+        public ReplaceAndInsertImage(string url)
+        {
+            this.url = url;
+        }
+
+        public ReplaceAction Replacing(ReplacingArgs e)
+        {
+            //获取当前节点
+            var node = e.MatchNode;
+            //获取当前文档
+            Document doc = node.Document as Document;
+            DocumentBuilder builder = new DocumentBuilder(doc);
+            //将光标移动到指定节点
+            builder.MoveTo(node);
+            //插入图片
+            builder.InsertImage(url);
+            return ReplaceAction.Replace;
         }
     }
 }

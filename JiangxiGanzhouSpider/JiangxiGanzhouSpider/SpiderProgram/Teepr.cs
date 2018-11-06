@@ -249,6 +249,7 @@ namespace JiangxiGanzhouSpider.SpiderProgram
                         htmlCount++;
                         myUtils.UpdateLabel(label3, htmlCount);
                         myUtils.UpdateListBox(listBox1, title);
+                        myUtils.InsertPictureToWord(outPath, title);
                         isOk = true;
                     }
 

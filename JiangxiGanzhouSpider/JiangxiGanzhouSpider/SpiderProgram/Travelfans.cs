@@ -1,5 +1,4 @@
-﻿using Aspose.Words;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using JiangxiGanzhouSpider.Tool;
 using MyTool;
 using System;

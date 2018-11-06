@@ -39,7 +39,7 @@ namespace JiangxiGanzhouSpider.SpiderProgram
                 Directory.CreateDirectory(outPath);//创建新路径
         }
         public void StartSpider(object obj)
-        {
+        {                     
             int option = int.Parse(obj.ToString());
             switch (option)
             {
@@ -283,6 +283,7 @@ namespace JiangxiGanzhouSpider.SpiderProgram
                             htmlCount++;
                             myUtils.UpdateLabel(label3, htmlCount);
                             myUtils.UpdateListBox(listBox1, title);
+                            myUtils.InsertPictureToWord(outPath, title);
                             isOk = true;
                         }
                     }
@@ -292,6 +293,7 @@ namespace JiangxiGanzhouSpider.SpiderProgram
                         if (Directory.Exists(fullFoldPath))
                             Directory.Delete(fullFoldPath, true);
                     }
+                   
                 }
                 catch (Exception e)
                 {
