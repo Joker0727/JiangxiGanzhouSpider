@@ -72,4 +72,3 @@ F:\Private\江西赣州采集\JiangxiGanzhouSpider\JiangxiGanzhouSpider\JiangxiG
 F:\Private\江西赣州采集\JiangxiGanzhouSpider\JiangxiGanzhouSpider\JiangxiGanzhouSpider\obj\Debug\JiangxiGanzhouSpider.pdb
 F:\Private\江西赣州采集\JiangxiGanzhouSpider\JiangxiGanzhouSpider\JiangxiGanzhouSpider\bin\Debug\Microsoft.QualityTools.Testing.Fakes.dll
 F:\Private\江西赣州采集\JiangxiGanzhouSpider\JiangxiGanzhouSpider\JiangxiGanzhouSpider\bin\Debug\zh-Hans\Microsoft.QualityTools.Testing.Fakes.resources.dll
-F:\Private\江西赣州采集\JiangxiGanzhouSpider\JiangxiGanzhouSpider\JiangxiGanzhouSpider\obj\Debug\JiangxiGanzhouSpider.csprojResolveAssemblyReference.cache

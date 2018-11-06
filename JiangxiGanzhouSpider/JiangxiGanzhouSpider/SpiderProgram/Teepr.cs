@@ -244,13 +244,15 @@ namespace JiangxiGanzhouSpider.SpiderProgram
 
                     if (myUtils.TransToWord(htmlStr, title, fullFoldPath))
                     {
-                        sqlStr = $"UPDATE TeeprNewsUrl SET IsDownload = 1 WHERE Url = '{newsUrl}'";
-                        sh.RunSql(sqlStr);
-                        htmlCount++;
-                        myUtils.UpdateLabel(label3, htmlCount);
-                        myUtils.UpdateListBox(listBox1, title);
-                        myUtils.InsertPictureToWord(outPath, title);
-                        isOk = true;
+                        if (myUtils.InsertPictureToWord(outPath, title))
+                        {
+                            sqlStr = $"UPDATE TeeprNewsUrl SET IsDownload = 1 WHERE Url = '{newsUrl}'";
+                            sh.RunSql(sqlStr);
+                            htmlCount++;
+                            myUtils.UpdateLabel(label3, htmlCount);
+                            myUtils.UpdateListBox(listBox1, title);
+                            isOk = true;
+                        }
                     }
 
                     if (!isOk)

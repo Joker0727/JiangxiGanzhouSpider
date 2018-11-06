@@ -325,9 +325,10 @@ namespace JiangxiGanzhouSpider.Tool
         /// <summary>
         /// 图片插入word
         /// </summary>
-        public void InsertPictureToWord(string outPath, string title)
+        public bool InsertPictureToWord(string outPath, string title)
         {
             string folderPath = outPath + title + @"\";
+            bool isOk = false;
             try
             {
                 List<string> imgNAmeList = GetImgs(folderPath);
@@ -349,11 +350,13 @@ namespace JiangxiGanzhouSpider.Tool
                 doc.Save(outPath + title + ".doc");
                 if (Directory.Exists(folderPath))
                     Directory.Delete(folderPath, true);
+                isOk = true;
             }
             catch (Exception e)
             {
                 WriteLog(e);
             }
+            return isOk;
         }
 
         /// <summary>

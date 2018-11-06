@@ -39,7 +39,7 @@ namespace JiangxiGanzhouSpider.SpiderProgram
                 Directory.CreateDirectory(outPath);//创建新路径
         }
         public void StartSpider(object obj)
-        {                     
+        {
             int option = int.Parse(obj.ToString());
             switch (option)
             {
@@ -278,13 +278,15 @@ namespace JiangxiGanzhouSpider.SpiderProgram
                     {
                         if (myUtils.TransToWord(allStr, title, fullFoldPath))
                         {
-                            sqlStr = $"UPDATE IcookMenu SET IsDownload = 1 WHERE Url = '{menuUrl}'";
-                            sh.RunSql(sqlStr);
-                            htmlCount++;
-                            myUtils.UpdateLabel(label3, htmlCount);
-                            myUtils.UpdateListBox(listBox1, title);
-                            myUtils.InsertPictureToWord(outPath, title);
-                            isOk = true;
+                            if (myUtils.InsertPictureToWord(outPath, title))
+                            {
+                                sqlStr = $"UPDATE IcookMenu SET IsDownload = 1 WHERE Url = '{menuUrl}'";
+                                sh.RunSql(sqlStr);
+                                htmlCount++;
+                                myUtils.UpdateLabel(label3, htmlCount);
+                                myUtils.UpdateListBox(listBox1, title);
+                                isOk = true;
+                            }
                         }
                     }
 
@@ -293,7 +295,7 @@ namespace JiangxiGanzhouSpider.SpiderProgram
                         if (Directory.Exists(fullFoldPath))
                             Directory.Delete(fullFoldPath, true);
                     }
-                   
+
                 }
                 catch (Exception e)
                 {
