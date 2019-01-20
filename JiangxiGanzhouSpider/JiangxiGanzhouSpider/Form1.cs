@@ -18,7 +18,7 @@ namespace JiangxiGanzhouSpider
         public StartSpider ss = null;
         public string basePath = AppDomain.CurrentDomain.BaseDirectory;
         public Thread th = null;
-        public string workId = "ww-0008";
+        public string workId = "ww-0022";
         public Form1()
         {
             InitializeComponent();
@@ -75,7 +75,7 @@ namespace JiangxiGanzhouSpider
         public void StartWork(object obj)
         {
             int option = int.Parse(obj.ToString());
-            if (!IsAuthorised(workId))
+            if (!IsAuthorised())
             {
                 MessageBox.Show("网络异常！");
                 return;
@@ -114,21 +114,36 @@ namespace JiangxiGanzhouSpider
         /// </summary>
         /// <param name="workId"></param>
         /// <returns></returns>
-        public bool IsAuthorised(string workId)
+        public bool IsAuthorised()
         {
             string conStr = "Server=111.230.149.80;DataBase=MyDB;uid=sa;pwd=1add1&one";
-            using (SqlConnection con = new SqlConnection(conStr))
+            bool bo = false;
+            try
             {
-                string sql = string.Format("select count(*) from MyWork Where WorkId ='{0}'", workId);
-                using (SqlCommand cmd = new SqlCommand(sql, con))
+                using (SqlConnection con = new SqlConnection(conStr))
                 {
-                    con.Open();
-                    int count = int.Parse(cmd.ExecuteScalar().ToString());
-                    if (count > 0)
-                        return true;
+                    string sql = string.Format("select count(*) from MyWork Where IsAuth = 1 and WorkId ='{0}'", workId);
+                    using (SqlCommand cmd = new SqlCommand(sql, con))
+                    {
+                        con.Open();
+                        int count = int.Parse(cmd.ExecuteScalar().ToString());
+                        if (count > 0)
+                        {
+                            bo = true;
+                            string currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                            sql = $"update MyWork set LastTime ='{currentTime}' where WorkId = '{workId}'";
+                            cmd.CommandText = sql;
+                            int res = cmd.ExecuteNonQuery();
+                        }
+                    }
                 }
             }
-            return false;
+            catch (Exception)
+            {
+                bo = false;
+            }
+
+            return bo;
         }
         /// <summary>
         /// 关闭线程
